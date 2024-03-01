@@ -1,0 +1,55 @@
+import heapq
+
+class State:
+    def __init__(self, board, row, cost):
+        self.board = board
+        self.row = row
+        self.cost = cost
+    
+    def __lt__(self, other):
+        return self.cost < other.cost
+
+def is_safe(board, row, col):
+    for i in range(row):
+        if board[i] == col or \
+            board[i] - i == col - row or \
+            board[i] + i == col + row:
+            return False
+    return True
+
+def heuristic(board):
+    attacks = 0
+    for i in range(8):
+        for j in range(i+1, 8):
+            if board[i] == board[j] or abs(board[i] - board[j]) == j - i:
+                attacks += 1
+    return attacks
+
+def solve_8_queens():
+    start_board = [-1] * 8
+    open_list = []
+    heapq.heappush(open_list, State(start_board, 0, 0))
+    while open_list:
+        current_state = heapq.heappop(open_list)
+        if current_state.row == 8:
+            print("Solution:")
+            print_solution(current_state.board)
+            return
+        for col in range(8):
+            if is_safe(current_state.board, current_state.row, col):
+                new_board = current_state.board[:]
+                new_board[current_state.row] = col
+                new_cost = current_state.cost + heuristic(new_board)
+                heapq.heappush(open_list, State(new_board, current_state.row + 1, new_cost))
+
+def print_solution(board):
+    for i in range(8):
+        for j in range(8):
+            if board[i] == j:
+                print("Q", end=" ")
+            else:
+                print(".", end=" ")
+        print()
+
+if __name__ == "__main__":
+    solve_8_queens()
