@@ -1,0 +1,90 @@
+import heapq
+
+class PuzzleNode:
+    def __init__(self, state, parent=None, move=None, cost=0):
+        self.state = state
+        self.parent = parent
+        self.move = move
+        self.cost = cost
+
+    def __lt__(self, other):
+        return self.cost < other.cost
+
+    def __eq__(self, other):
+        return self.state == other.state
+
+    def __hash__(self):
+        return hash(str(self.state))
+
+def manhattan_distance(state):
+    goal = [[1, 2, 3], [4, 5, 6], [7, 8, 0]]
+    distance = 0
+    for i in range(3):
+        for j in range(3):
+            value = state[i][j]
+            if value != 0:
+                goal_i, goal_j = divmod(value - 1, 3)
+                distance += abs(i - goal_i) + abs(j - goal_j)
+    return distance
+
+def get_neighbors(state):
+    neighbors = []
+    zero_i, zero_j = None, None
+    for i in range(3):
+        for j in range(3):
+            if state[i][j] == 0:
+                zero_i, zero_j = i, j
+                break
+        if zero_i is not None:
+            break
+    for di, dj in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+        new_i, new_j = zero_i + di, zero_j + dj
+        if 0 <= new_i < 3 and 0 <= new_j < 3:
+            new_state = [row[:] for row in state]
+            new_state[zero_i][zero_j], new_state[new_i][new_j] = new_state[new_i][new_j], new_state[zero_i][zero_j]
+            neighbors.append(new_state)
+    return neighbors
+
+def solve_puzzle(initial_state):
+    start_node = PuzzleNode(initial_state)
+    goal_state = [[1, 2, 3], [4, 5, 6], [7, 8, 0]]
+    open_list = []
+    closed_set = set()
+    heapq.heappush(open_list, start_node)
+
+    while open_list:
+        current_node = heapq.heappop(open_list)
+        if current_node.state == goal_state:
+            path = []
+            while current_node:
+                path.append(current_node.state)
+                current_node = current_node.parent
+            return path[::-1]
+
+        closed_set.add(current_node)
+
+        for neighbor_state in get_neighbors(current_node.state):
+            neighbor_node = PuzzleNode(neighbor_state, current_node, cost=current_node.cost + 1 + manhattan_distance(neighbor_state))
+            if neighbor_node not in closed_set:
+                heapq.heappush(open_list, neighbor_node)
+
+    return None
+
+def print_solution(solution):
+    if solution is None:
+        print("No solution found.")
+    else:
+        for i, state in enumerate(solution):
+            print(f"Step {i}:")
+            for row in state:
+                print(row)
+            print()
+
+if __name__ == "__main__":
+    initial_state = [
+        [1, 2, 3],
+        [4, 5, 0],
+        [7, 8, 6]
+    ]
+    solution = solve_puzzle(initial_state)
+    print_solution(solution)
