@@ -1,0 +1,69 @@
+class MapColoringCSP:
+    def __init__(self, variables, domains, constraints):
+        self.variables = variables
+        self.domains = domains
+        self.constraints = constraints
+
+    def is_consistent(self, variable, value, assignment):
+        for neighbor in self.constraints.get(variable, []):
+            if neighbor in assignment and assignment[neighbor] == value:
+                return False
+        return True
+
+    def backtracking_search(self):
+        return self.backtrack({})
+
+    def backtrack(self, assignment):
+        if len(assignment) == len(self.variables):
+            return assignment
+
+        unassigned = [var for var in self.variables if var not in assignment]
+        var = unassigned[0]
+
+        for value in self.domains[var]:
+            if self.is_consistent(var, value, assignment):
+                assignment[var] = value
+                result = self.backtrack(assignment)
+                if result is not None:
+                    return result
+                del assignment[var]
+        return None
+
+def main():
+    # Define variables
+    variables = ['WA', 'NT', 'SA', 'Q', 'NSW', 'V', 'T']
+
+    # Define domains
+    domains = {
+        'WA': ['red', 'green', 'blue'],
+        'NT': ['red', 'green', 'blue'],
+        'SA': ['red', 'green', 'blue'],
+        'Q': ['red', 'green', 'blue'],
+        'NSW': ['red', 'green', 'blue'],
+        'V': ['red', 'green', 'blue'],
+        'T': ['red', 'green', 'blue']
+    }
+
+    # Define constraints (neighbors that should have different colors)
+    constraints = {
+        'WA': ['NT', 'SA'],
+        'NT': ['WA', 'SA', 'Q'],
+        'SA': ['WA', 'NT', 'Q', 'NSW', 'V'],
+        'Q': ['NT', 'SA', 'NSW'],
+        'NSW': ['SA', 'Q', 'V'],
+        'V': ['SA', 'NSW', 'T'],
+        'T': ['V']
+    }
+
+    csp = MapColoringCSP(variables, domains, constraints)
+    assignment = csp.backtracking_search()
+
+    if assignment:
+        print("Map Coloring Solution:")
+        for variable, color in assignment.items():
+            print(f"{variable}: {color}")
+    else:
+        print("No solution found.")
+
+if __name__ == "__main__":
+    main()
