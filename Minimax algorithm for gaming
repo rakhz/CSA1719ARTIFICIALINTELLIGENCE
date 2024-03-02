@@ -1,0 +1,60 @@
+import random
+
+# Winning conditions for tic-tac-toe
+winning_conditions = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],  # Rows
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],  # Columns
+    [0, 4, 8], [2, 4, 6]              # Diagonals
+]
+
+def minimax(board, depth, maximizing_player):
+    # Check if the game is over
+    if check_win(board, 'X'):
+        return -10
+    elif check_win(board, 'O'):
+        return 10
+    elif depth == 0:
+        return 0
+
+    # If it's the maximizing player's turn
+    if maximizing_player:
+        best_score = -10
+        for move in get_moves(board):
+            new_board = make_move(board, move, 'O')  # Assuming AI is playing 'O'
+            score = minimax(new_board, depth - 1, False)
+            best_score = max(best_score, score)
+        return best_score
+
+    # If it's the minimizing player's turn
+    else:
+        best_score = 10
+        for move in get_moves(board):
+            new_board = make_move(board, move, 'X')  # Assuming player is playing 'X'
+            score = minimax(new_board, depth - 1, True)
+            best_score = min(best_score, score)
+        return best_score
+
+# Function to check if the game is over
+def check_win(board, player):
+    for condition in winning_conditions:
+        if board[condition[0]] == player and board[condition[1]] == player and board[condition[2]] == player:
+            return True
+    return False
+
+# Function to get the player's move
+def get_moves(board):
+    moves = []
+    for i in range(9):
+        if board[i] == '-':
+            moves.append(i)
+    return moves
+
+# Function to make a move
+def make_move(board, move, player):
+    new_board = board[:]
+    new_board[move] = player
+    return new_board
+
+# Start the game
+board = ['-' for _ in range(9)]  # Initialize an empty board
+print(minimax(board, 3, True))   # Assuming AI is playing first, depth 3
